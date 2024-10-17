@@ -1,0 +1,33 @@
+# --------------------------------------------
+# Custom
+# --------------------------------------------
+# Ignore VSCode folder
+.vscode/*
+T3_2023
+Consultas.pdf
+
+# --------------------------------------------
+# Python
+# --------------------------------------------
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+*.idea
+*.DS_STORE
+.vscode
+
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# lucasvsj Files
+lucasvsj-*
+
+
+Tareas/T3/solution/data/xl/contenido_pedidos.csv
+Tareas/T3/solution/data/xl/pedidos.csv
+Tareas/T3/solution/data/xl/pizzas.csv
+Tareas/T3/solution/data/xl/locales.csv
+

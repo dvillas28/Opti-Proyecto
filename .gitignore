@@ -22,12 +22,3 @@ __pycache__/
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 
-# lucasvsj Files
-lucasvsj-*
-
-
-Tareas/T3/solution/data/xl/contenido_pedidos.csv
-Tareas/T3/solution/data/xl/pedidos.csv
-Tareas/T3/solution/data/xl/pizzas.csv
-Tareas/T3/solution/data/xl/locales.csv
-

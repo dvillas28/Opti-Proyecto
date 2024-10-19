@@ -1,4 +1,4 @@
-# Optimización
+# Proyecto de Optimización - Grupo 3 - ICS1113
 
 ## Librerías 
 ```python

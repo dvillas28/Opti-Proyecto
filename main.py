@@ -1,21 +1,22 @@
 from gurobipy import GRB, Model, quicksum # instalada
 from os import path
 
-from parametros import cargar_parametros
+from datos.parametros import cargar_parametros
 
 def main():
     
 ############## Carga de parametros y definicion de conjuntos #######################################
     
     # De aqui salen c[i], beta[i], l[i], a[i], q[i], sigma[i], theta[i] y los otros parametros
-    c, beta, l, a, q, sigma, theta, params = cargar_parametros(path.join("data", "example_data.csv"))
+    c, beta, l, a, q, sigma, theta, params = cargar_parametros(path.join("datos", "example_data.csv"))
 
 
     # Conjunto I de rutas
     I = range(1, params["I"] + 1)
 
 
-    ########## Generacion del modelo ############################################################### 
+############## Generacion del modelo ############################################################### 
+    
     model = Model("Problema de Optimizacion")
     model.setParam("TimeLimit", 60) # tiempo max de ejecución (en segundos)
 
@@ -88,9 +89,9 @@ def main():
 
         # R9. Irrelevancia de características de la calle: Si una calle no está en uso, no 
         # nos afecta si cumplen sus características limites
-        model.addConstr(Q[i] <= R[i], name=f"R9_irrelevancia_por_calidad")
-        model.addConstr(Theta[i] <= R[i], name=f"R9_irrelevancia_por_inclinacion")
-        model.addConstr(A[i] <= R[i], name=f"R9_irrelevancia_por_ancho")
+        model.addConstr(Q[i] <= R[i], name=f"R9_{i}_irrelevancia_por_calidad")
+        model.addConstr(Theta[i] <= R[i], name=f"R9_{i}_irrelevancia_por_inclinacion")
+        model.addConstr(A[i] <= R[i], name=f"R9_{i}_irrelevancia_por_ancho")
 
         # R10. Las calles que no poseen iluminación, no pueden ser utilizadas de noche
         model.addConstr(X[i] <= params["M"] * (1 - (sigma[i] * params["epsilon"])), name=f"R10_{i}")
@@ -117,7 +118,7 @@ def main():
 
 
     # Resolver el problema
-    model.optimize()
+    # model.optimize()
 
 
 ############### Impresion de resultados ############################################################

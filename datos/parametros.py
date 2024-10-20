@@ -36,13 +36,14 @@ def cargar_parametros(path: str) -> tuple[dict]:
 
     # leer la data desde el csv
     df = pd.read_csv(path)
+    # print(df)
     
     otros_params["I"] = df.shape[0] # setear la cantidad de rutas en base a la cantidad de filas
 
     # PENDIENTE: parsear la data
     # las columnas como calidad, o luz, debemos pasarlas a numero antes
     
-    return
+    return c, beta, l, a, q, sigma, theta, otros_params
 
 if __name__ == "__main__":
-    datos = cargar_parametros(path.join("data", "example_data.csv"))
+    datos = cargar_parametros(path.join("example_data.csv"))

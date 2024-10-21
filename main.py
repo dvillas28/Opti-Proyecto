@@ -12,7 +12,7 @@ def main():
 
 
     # Conjunto I de rutas
-    I = range(1, params["I"] + 1)
+    I = range(params["I"] + 1)
 
 
 ############## Generacion del modelo ############################################################### 

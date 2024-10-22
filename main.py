@@ -58,6 +58,7 @@ def main():
         # R1. Tiempo máximo de cada camino: Ningún camino puede demorarse más de lo que tarde el
         # tsunami en llegar.
         model.addConstr(T[i] <= params["Tmax"], name=f"R1_{i}")
+        # model.addConstr(7*60 <= T[i], name=f"R11_{i}")
 
         # R3. Capacidad del camino: La cantidad de personas en un camino no puede sobrepasar la
         # capacidad máxima del camino.
@@ -98,8 +99,10 @@ def main():
         # R11. En caso de que una calle no cumpla con ningún requisito la calle no se puede utilizar
         model.addConstr(X[i] <= params["M"] * (3 - Q[i] - Theta[i] - A[i]), name=f"R11_{i}")
 
-        # R12. Definimos Ti
+        # R2
+        # model.addConstr(T[i] <= R[i] ())
 
+    # R12. Definimos Ti
     for i in I:
         model.addConstr(T[i] == ((l[i] / a[i]) * params["alpha"] + theta[i] * params["kappa"] + q[i] * params["gamma"]) * R[i] + (X[i] * params["delta"]) + params["Tmax"] * (params["eta"] * Q[i] + params["lambda"] * Theta[i] + params["mu"] * A[i] + params["zeta"] * S[i]), name=f"Restriccion T_i")
 
@@ -122,11 +125,11 @@ def main():
 
 
     # Imprimir el encabezado de la tabla con formato alineado
-    print(f"{'ruta':<6} | {'nombre'} | {'X_i':<5} | {'T_i':<5} | {'Q_i':<5} | {'Theta_i':<8} | {'A_i':<5} | {'S_i':<5} | {'R_i':<5} | {'c_i':<5} | {'a_i':<5} | {'l_i':<5} | {'sigma_i':<8} | {'theta_i':<8} | {'q_i':<5}")
+    print(f"{'ruta':<6} | {'X_i':<4} | {'T_i':<6} | {'R_i':<5} | {'Theta_i':<8} | {'A_i':<5} | {'S_i':<5} | {'Q_i':<5} | {'nombre'} ")
 
     # Iterar sobre los elementos de I y mostrar los valores con el mismo formato alineado
     for i in I:
-        print(f"{i:<6} | {names[i]} |{X[i].x:<5} | {T[i].x:<5} | {Q[i].x:<5} | {Theta[i].x:<8} | {A[i].x:<5} | {S[i].x:<5} | {R[i].x:<5} | {c[i]:<5} | {a[i]:<5} | {l[i]:<5} | {sigma[i]:<8} | {theta[i]:<8} | {q[i]:<5}")
+        print(f"{i:<6} |{X[i].x:<5} | {round(T[i].x, 2):<6} | {R[i].x:<5} | {Theta[i].x:<8} | {A[i].x:<5} | {S[i].x:<5} | {Q[i].x:<5} | {names[i]}")
 
 
 

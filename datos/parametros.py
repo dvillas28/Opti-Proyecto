@@ -79,10 +79,6 @@ def cargar_parametros(path: str) -> tuple[dict]:
     
     names = df["nombre_ruta"].to_dict()
 
-    # print(c)
-    # print()
-    # print(beta)
-
     return c, l, a, q, sigma, theta, otros_params, names
 
 if __name__ == "__main__":

@@ -8,18 +8,15 @@ def main():
 ############## Carga de parametros y definicion de conjuntos #######################################
     
     # De aqui salen c[i], beta[i], l[i], a[i], q[i], sigma[i], theta[i] y los otros parametros
-    c, beta, l, a, q, sigma, theta, params = cargar_parametros(path.join("datos", "example_data.csv"))
-
+    c, l, a, q, sigma, theta, params, names = cargar_parametros(path.join("datos", "datos_e3_version2.txt"))
 
     # Conjunto I de rutas
-    I = range(params["I"] + 1)
-
+    I = range(params["I"])
 
 ############## Generacion del modelo ############################################################### 
     
     model = Model("Problema de Optimizacion")
     model.setParam("TimeLimit", 60) # tiempo max de ejecución (en segundos)
-
 
 ############## Variables de decision ############################################################### 
     
@@ -32,7 +29,7 @@ def main():
     # Ti: Tiempo de evacuacion de cada ruta i
     T = {i: model.addVar(vtype = GRB.CONTINUOUS, name=f"T_{i}") for i in I}
 
-    # Si: 1 si el camino i esta saturado. 0 eoc
+    # Si: 1 si el i esta saturado. 0 eoc
     S = {i: model.addVar(vtype = GRB.BINARY, name=f"S_{i}") for i in I}
 
     # Ri: 1 si el camino i esta en uso. 0 eoc
@@ -49,7 +46,6 @@ def main():
 
     # Agregar las variables al modelo
     model.update()
-
 
 ############## Restricciones #######################################################################
     
@@ -69,9 +65,12 @@ def main():
     
         # R4. Saturación: Si la cantidad de personas en un camino supera el umbral que permite la ruta 
         # sin saturarse, la ruta se satura (ocasionando S[i] = 1).
-        model.addConstr(X[i] <= c[i] * beta[i] * (1 - S[i]) + params["N"] * S[i], name=f"R4_{i}")
+        model.addConstr(X[i] <= c[i] * params["beta"] * (1 - S[i]) + params["N"] * S[i], name=f"R4_{i}")
 
-        # R5. Ruta en uso:  Si no hay personas en una ruta, esta no se encuentra en uso. 
+        # R5. Ruta en uso:  Si no hay personas en una ruta, esta no se encuentra        # sin saturarse, la ruta se satura (ocasionando S[i] = 1).
+        model.addConstr(R[i] * params["N"] >= X[i] , name=f"R5_{i}")
+
+        # R6. Cumple calidad mínima: Si una calle no cumple el estándar mínimo de calidad, esta no se
         # Por lo cual su tiempo no será contabilizado en el cálculo de la función a minimizar.
         model.addConstr(R[i] * params["N"] >= X[i] , name=f"R5_{i}")
 
@@ -99,30 +98,36 @@ def main():
         # R11. En caso de que una calle no cumpla con ningún requisito la calle no se puede utilizar
         model.addConstr(X[i] <= params["M"] * (3 - Q[i] - Theta[i] - A[i]), name=f"R11_{i}")
 
+        # R12. Definimos Ti
+
+    for i in I:
+        model.addConstr(T[i] == ((l[i] / a[i]) * params["alpha"] + theta[i] * params["kappa"] + q[i] * params["gamma"]) * R[i] + (X[i] * params["delta"]) + params["Tmax"] * (params["eta"] * Q[i] + params["lambda"] * Theta[i] + params["mu"] * A[i] + params["zeta"] * S[i]), name=f"Restriccion T_i")
+
 
 ############## Funcion Objetivo ####################################################################
     
-    model.setObjective(quicksum
-        (
-            (
-        
-        ((l[i] / a[i]) * params["alpha"] + theta[i] * params["kappa"] + q[i] * params["gamma"]) * R[i] + 
-        (X[i] * params["delta"]) + 
-        params["Tmax"] * (params["eta"] * Q[i] + params["lambda"] * Theta[i] + params["mu"] * A[i] + params["zeta"] * S[i])
-
-            ) for i in I
-        
-        ), GRB.MINIMIZE
-    
-    )
+    model.setObjective(quicksum(T[i] for i in I), GRB.MINIMIZE)
 
 
     # Resolver el problema
-    # model.optimize()
+    model.optimize()
 
 
 ############### Impresion de resultados ############################################################
     # PENDIENTE
+    print(f"FUNCION OBJETIVO_VALOR = {model.ObjVal}")
+
+    for key, value in params.items():
+        print(f"{key}: {value}")
+
+
+    # Imprimir el encabezado de la tabla con formato alineado
+    print(f"{'ruta':<6} | {'nombre'} | {'X_i':<5} | {'T_i':<5} | {'Q_i':<5} | {'Theta_i':<8} | {'A_i':<5} | {'S_i':<5} | {'R_i':<5} | {'c_i':<5} | {'a_i':<5} | {'l_i':<5} | {'sigma_i':<8} | {'theta_i':<8} | {'q_i':<5}")
+
+    # Iterar sobre los elementos de I y mostrar los valores con el mismo formato alineado
+    for i in I:
+        print(f"{i:<6} | {names[i]} |{X[i].x:<5} | {T[i].x:<5} | {Q[i].x:<5} | {Theta[i].x:<8} | {A[i].x:<5} | {S[i].x:<5} | {R[i].x:<5} | {c[i]:<5} | {a[i]:<5} | {l[i]:<5} | {sigma[i]:<8} | {theta[i]:<8} | {q[i]:<5}")
+
 
 
 if __name__ == "__main__":

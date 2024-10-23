@@ -1,6 +1,6 @@
 from gurobipy import GRB, Model, quicksum # instalada
 from os import path
-
+import pandas as pd
 from datos.parametros import cargar_parametros
 
 def main():
@@ -16,7 +16,7 @@ def main():
 ############## Generacion del modelo ############################################################### 
     
     model = Model("Problema de Optimizacion")
-    model.setParam("TimeLimit", 60) # tiempo max de ejecución (en segundos)
+    model.setParam("TimeLimit", 30) # tiempo max de ejecución (en segundos)
 
 ############## Variables de decision ############################################################### 
     
@@ -104,7 +104,7 @@ def main():
 
     # R12. Definimos Ti
     for i in I:
-        model.addConstr(T[i] == ((l[i] / a[i]) * params["alpha"] + theta[i] * params["kappa"] + q[i] * params["gamma"]) * R[i] + (X[i] * params["delta"]) + params["Tmax"] * (params["eta"] * Q[i] + params["lambda"] * Theta[i] + params["mu"] * A[i] + params["zeta"] * S[i]), name=f"Restriccion T_i")
+        model.addConstr(T[i] == ((l[i]) * params["alpha"] + theta[i] * params["kappa"] + params["gamma"] * q[i]) * R[i] + (X[i] * params["delta"]) + params["Tmax"] * (params["eta"] * Q[i] + params["lambda"] * Theta[i] + params["mu"] * A[i] + params["zeta"] * S[i]), name=f"Restriccion T_i")
 
 
 ############## Funcion Objetivo ####################################################################
@@ -117,12 +117,11 @@ def main():
 
 
 ############### Impresion de resultados ############################################################
-    # PENDIENTE
-    print(f"FUNCION OBJETIVO_VALOR = {model.ObjVal}")
+    
+    print(f"Valor de la funcion objetivo = {model.ObjVal}")
 
     for key, value in params.items():
         print(f"{key}: {value}")
-
 
     # Imprimir el encabezado de la tabla con formato alineado
     print(f"{'ruta':<6} | {'X_i':<4} | {'T_i':<6} | {'R_i':<5} | {'Theta_i':<8} | {'A_i':<5} | {'S_i':<5} | {'Q_i':<5} | {'nombre'} ")
@@ -131,6 +130,24 @@ def main():
     for i in I:
         print(f"{i:<6} |{X[i].x:<5} | {round(T[i].x, 2):<6} | {R[i].x:<5} | {Theta[i].x:<8} | {A[i].x:<5} | {S[i].x:<5} | {Q[i].x:<5} | {names[i]}")
 
+    
+    # Escribir a un excel los resultados
+
+    redondear = lambda var: round(var.x, 2)
+
+    data = {
+        "ruta": pd.Series(names),
+        "X_i":pd.Series(map(redondear, X.values())),
+        "T_i":pd.Series(map(redondear, T.values())),
+        "R_i":pd.Series(map(redondear, R.values())),
+        "Theta_i":pd.Series(map(redondear, Theta.values())),
+        "A_i":pd.Series(map(redondear, A.values())),
+        "S_i":pd.Series(map(redondear, S.values())),
+        "Q_i":pd.Series(map(redondear, Q.values()))
+    }
+
+    df = pd.DataFrame(data)
+    df.to_excel(path.join("resultados", "resultados.xlsx"), index=False)
 
 
 if __name__ == "__main__":

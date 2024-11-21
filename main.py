@@ -161,23 +161,28 @@ def main(N: int, display_output: bool = False):
     }
 
     df = pd.DataFrame(data)
-    df.to_excel(path.join("resultados", "sensibilidad", "N", f"resultados_N_{N}.xlsx"), index=False)
+    
+    # escribir a una carpeta con todas las variaciones de N
+    # df.to_excel(path.join("resultados", "sensibilidad", "N", f"resultados_N_{N}.xlsx"), index=False)
+    
+    # escribir al excel de resultados principal, mejor presentado
+    df.to_excel(path.join("resultados", "E4", f"resultados_E4.xlsx"), index=False)
 
 
 if __name__ == "__main__":
     # lista del 10000 hasta el 1000 de 1000 en 1000
-    lista_N = list(range(10000, 0, -1000))
-    lista_N.append(500)
-    lista_N.append(250)
-    lista_N.append(100)
-    lista_N.append(50)
-    lista_N.append(10)
-    lista_N.append(1)
-    lista_N.append(11000)
+    # lista_N = list(range(10000, 0, -1000))
+    # lista_N.append(500)
+    # lista_N.append(250)
+    # lista_N.append(100)
+    # lista_N.append(50)
+    # lista_N.append(10)
+    # lista_N.append(1)
+    # lista_N.append(11000)
     
-    for n in lista_N:
-        print("---------------------------------------------------")
-        main(n)
-        print("---------------------------------------------------")
+    # for n in lista_N:
+    #     print("---------------------------------------------------")
+    #     main(n)
+    #     print("---------------------------------------------------")
 
-    # main(10000, True)
+    main(N=10000)

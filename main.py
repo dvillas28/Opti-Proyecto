@@ -3,7 +3,7 @@ from os import path
 import pandas as pd
 from datos.parametros import cargar_parametros
 
-def main(N: int, beta: int, tmax: int, display_output: bool = False):
+def main(N: int, beta: int, tmax: int, option: str = "",display_output: bool = False):
     
 ############## Carga de parametros y definicion de conjuntos #######################################
     
@@ -121,9 +121,14 @@ def main(N: int, beta: int, tmax: int, display_output: bool = False):
 
 ############### Impresion de resultados ############################################################
     
+    if option != "":
+        print("Analisis de sensibilidad de ", option)
+    else:
+        print("Resultados")
+    
     print(f"N = {N}")
     print(f"beta = {beta}")
-    print(f"tmax = {tm}")
+    print(f"tmax = {tmax/60}")
     try:
         print(f"Funcion objetivo = {model.ObjVal}")
     except:
@@ -170,41 +175,61 @@ def main(N: int, beta: int, tmax: int, display_output: bool = False):
     df = pd.DataFrame(data)
     
     # escribir a una carpeta con todas las variaciones de N
-    # df.to_excel(path.join("resultados", "sensibilidad", "beta", f"resultados_beta_{beta}.xlsx"), index=False)
-    df.to_excel(path.join("resultados", "sensibilidad", "tmax", f"resultados_tmax_{tm}.xlsx"), index=False)
+    if option == "N":
+        df.to_excel(path.join("resultados", "sensibilidad", "N", f"resultados_N_{N}.xlsx"), index=False)
+        
+    # escribir a una carpeta con todas las variaciones de beta
+    elif option == "beta":
+        df.to_excel(path.join("resultados", "sensibilidad", "beta", f"resultados_beta_{beta}.xlsx"), index=False)
+    
+    # escribir a una carpeta con todas las variaciones de tmax
+    elif option == "tmax":
+        df.to_excel(path.join("resultados", "sensibilidad", "tmax", f"resultados_tmax_{tm}.xlsx"), index=False)
     
     # escribir al excel de resultados principal, mejor presentado
-    # df.to_excel(path.join("resultados", "E4", f"resultados_E4.xlsx"), index=False)
+    else:
+        df.to_excel(path.join("resultados", "E4", f"resultados_E4.xlsx"), index=False)
 
 
 if __name__ == "__main__":
-    # lista del 10000 hasta el 1000 de 1000 en 1000
-    # lista_N = list(range(10000, 0, -1000))
-    # lista_N.append(500)
-    # lista_N.append(250)
-    # lista_N.append(100)
-    # lista_N.append(50)
-    # lista_N.append(10)
-    # lista_N.append(1)
-    # lista_N.append(11000)
+    N_DEFAULT = 10000
+    BETA_DEFAULT = 0.8
+    TMAX_DEFAULT = 14 * 60
+    # primero, una ejecucion con los valores por defecto
+    print("\n######## EJECUION CON PARAMETROS POR DEFECTO ########")
+    main(N=N_DEFAULT, beta=BETA_DEFAULT, tmax=TMAX_DEFAULT, display_output=True)
     
-    # for n in lista_N:
-    #     print("---------------------------------------------------")
-    #     main(n, True)
-    #     print("---------------------------------------------------")
+    
+    # probar valores de N
+    # lista del 10000 hasta el 1000 de 1000 en 1000
+    lista_N = list(range(10000, 0, -1000))
+    lista_N.append(500)
+    lista_N.append(250)
+    lista_N.append(100)
+    lista_N.append(50)
+    lista_N.append(10)
+    lista_N.append(1)
+    lista_N.append(11000)
+    
+    print("\n######## EJECUCION CON VARIACION DE N ########")
+    for n in lista_N:
+        print("---------------------------------------------------")
+        main(N=n, beta=BETA_DEFAULT, tmax=TMAX_DEFAULT, option="N")
+        print("---------------------------------------------------")
 
     
+    # probar valores de beta
+    lista_beta = [0.8, 0.83, 0.88, 0.9, 0.95, 1]
+    print("\n######## EJECUCION CON VARIACION DE BETA ########")
+    for beta in lista_beta:
+        print("---------------------------------------------------")
+        main(N=N_DEFAULT, beta=beta, tmax=TMAX_DEFAULT, option="beta")
+        print("---------------------------------------------------")
     
-    # lista_beta = [0.8, 0.83, 0.88, 0.9, 0.95, 1]
-    # for beta in lista_beta:
-    #     print("---------------------------------------------------")
-    #     main(N=10000, beta=beta)
-    #     print("---------------------------------------------------")
-    
+    # probar valores de tmax
     lista_tmax = [14, 15, 16, 17, 18, 19, 20]
+    print("\n######## EJECUCION CON VARIACION DE TMAX ########")
     for tm in lista_tmax:
         print("---------------------------------------------------")
-        main(N=10000, beta=0.8, tmax=tm*60)
+        main(N=N_DEFAULT, beta=BETA_DEFAULT, tmax=tm*60, option="tmax")
         print("---------------------------------------------------")
-
-    # main(N=10000, display_output=True)

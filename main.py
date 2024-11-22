@@ -3,7 +3,7 @@ from os import path
 import pandas as pd
 from datos.parametros import cargar_parametros
 
-def main(N: int, display_output: bool = False):
+def main(N: int, beta: int, tmax: int, display_output: bool = False):
     
 ############## Carga de parametros y definicion de conjuntos #######################################
     
@@ -60,7 +60,7 @@ def main(N: int, display_output: bool = False):
         
         # R1. Tiempo máximo de cada camino: Ningún camino puede demorarse más de lo que tarde el
         # tsunami en llegar.
-        model.addConstr(T[i] <= params["Tmax"], name=f"R1_{i}")
+        model.addConstr(T[i] <= tmax, name=f"R1_{i}")
         # model.addConstr(7*60 <= T[i], name=f"R11_{i}")
 
         # R3. Capacidad del camino: La cantidad de personas en un camino no puede sobrepasar la
@@ -69,7 +69,7 @@ def main(N: int, display_output: bool = False):
     
         # R4. Saturación: Si la cantidad de personas en un camino supera el umbral que permite la ruta 
         # sin saturarse, la ruta se satura (ocasionando S[i] = 1).
-        model.addConstr(X[i] <= c[i] * params["beta"] * (1 - S[i]) + N * S[i], name=f"R4_{i}")
+        model.addConstr(X[i] <= c[i] * beta * (1 - S[i]) + N * S[i], name=f"R4_{i}")
 
         # R5. Ruta en uso:  Si no hay personas en una ruta, esta no se encuentra        # sin saturarse, la ruta se satura (ocasionando S[i] = 1).
         model.addConstr(R[i] * N >= X[i] , name=f"R5_{i}")
@@ -107,7 +107,7 @@ def main(N: int, display_output: bool = False):
 
     # R12. Definimos Ti
     for i in I:
-        model.addConstr(T[i] == ((l[i]) * params["alpha"] + theta[i] * params["kappa"] + params["gamma"] * q[i]) * R[i] + (X[i] * params["delta"]) + params["Tmax"] * (params["eta"] * Q[i] + params["lambda"] * Theta[i] + params["mu"] * A[i] + params["zeta"] * S[i]), name=f"Restriccion T_i")
+        model.addConstr(T[i] == ((l[i]) * params["alpha"] + theta[i] * params["kappa"] + params["gamma"] * q[i]) * R[i] + (X[i] * params["delta"]) + tmax * (params["eta"] * Q[i] + params["lambda"] * Theta[i] + params["mu"] * A[i] + params["zeta"] * S[i]), name=f"Restriccion T_i")
 
 
 ############## Funcion Objetivo ####################################################################
@@ -122,6 +122,8 @@ def main(N: int, display_output: bool = False):
 ############### Impresion de resultados ############################################################
     
     print(f"N = {N}")
+    print(f"beta = {beta}")
+    print(f"tmax = {tm}")
     try:
         print(f"Funcion objetivo = {model.ObjVal}")
     except:
@@ -137,12 +139,17 @@ def main(N: int, display_output: bool = False):
         for key, value in params.items():
             print(f"{key}: {value}")
 
-        # Imprimir el encabezado de la tabla con formato alineado
-        print(f"{'ruta':<6} | {'X_i':<4} | {'T_i':<6} | {'R_i':<5} | {'Theta_i':<8} | {'A_i':<5} | {'S_i':<5} | {'Q_i':<5} | {'nombre'} ")
+        # print("RESULTADOS")
+        # print("Achicar la ventana para ver mejor la tabla.")
 
+        # Imprimir el encabezado de la tabla con formato alineado
+        
+        print(f"{'ruta':<6} | {'X_i':<4} | {'T_i':<6} | {'R_i':<5} | {'Theta_i':<8} | {'A_i':<5} | {'S_i':<5} | {'Q_i':<5} | {'nombre'} ")
+        # print(f"{'ruta':>6} | {'Nombre ruta':>30} | {'¿Se utiliza esa ruta? (R_i)':>25} | {'Cantidad de personas que evacuan (X_i)':>25} | {'Tiempo de evacuación por esa ruta (T_i)':>25} | {'¿Sobre pasa la inclinacion maxima? (Theta_i)':>25} | {'¿Cumple con el ancho minimo? (A_i)':>25} | {'¿Cumple con la calidad minima? (Q_i)':>25} | {'¿Se satura la ruta? (S_i)':>25} |")
         # Iterar sobre los elementos de I y mostrar los valores con el mismo formato alineado
         for i in I:
-            print(f"{i:<6} |{X[i].x:<5} | {round(T[i].x, 2):<6} | {R[i].x:<5} | {Theta[i].x:<8} | {A[i].x:<5} | {S[i].x:<5} | {Q[i].x:<5} | {names[i]}")
+            # print(f"{i:>6} | {names[i]:>30} | {R[i].x:>27} | {X[i].x:>38} | {round(T[i].x, 2):>39} | {Theta[i].x:>44} | {A[i].x:>34} | {Q[i].x:>36} | {S[i].x:>25} | ")
+            print(f"{i:>6} |{R[i].x:>5} | {round(T[i].x, 2):>6} | {X[i].x:>5} | {Theta[i].x:>8} | {A[i].x:>5} | {S[i].x:>5} | {Q[i].x:>5} | {names[i]}")
 
     
     # Escribir a un excel los resultados
@@ -163,10 +170,11 @@ def main(N: int, display_output: bool = False):
     df = pd.DataFrame(data)
     
     # escribir a una carpeta con todas las variaciones de N
-    # df.to_excel(path.join("resultados", "sensibilidad", "N", f"resultados_N_{N}.xlsx"), index=False)
+    # df.to_excel(path.join("resultados", "sensibilidad", "beta", f"resultados_beta_{beta}.xlsx"), index=False)
+    df.to_excel(path.join("resultados", "sensibilidad", "tmax", f"resultados_tmax_{tm}.xlsx"), index=False)
     
     # escribir al excel de resultados principal, mejor presentado
-    df.to_excel(path.join("resultados", "E4", f"resultados_E4.xlsx"), index=False)
+    # df.to_excel(path.join("resultados", "E4", f"resultados_E4.xlsx"), index=False)
 
 
 if __name__ == "__main__":
@@ -182,7 +190,21 @@ if __name__ == "__main__":
     
     # for n in lista_N:
     #     print("---------------------------------------------------")
-    #     main(n)
+    #     main(n, True)
     #     print("---------------------------------------------------")
 
-    main(N=10000)
+    
+    
+    # lista_beta = [0.8, 0.83, 0.88, 0.9, 0.95, 1]
+    # for beta in lista_beta:
+    #     print("---------------------------------------------------")
+    #     main(N=10000, beta=beta)
+    #     print("---------------------------------------------------")
+    
+    lista_tmax = [14, 15, 16, 17, 18, 19, 20]
+    for tm in lista_tmax:
+        print("---------------------------------------------------")
+        main(N=10000, beta=0.8, tmax=tm*60)
+        print("---------------------------------------------------")
+
+    # main(N=10000, display_output=True)
